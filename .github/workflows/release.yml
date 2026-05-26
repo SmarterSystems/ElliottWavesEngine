@@ -60,5 +60,6 @@ jobs:
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || inputs.ref }}
           generate_release_notes: true
           files: ./artifacts/*.nupkg
