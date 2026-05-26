@@ -1,0 +1,57 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  publish:
+    name: Pack and publish to NuGet
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+          include-prerelease: true
+
+      - name: Verify tag matches csproj version
+        shell: bash
+        run: |
+          TAG="${GITHUB_REF#refs/tags/v}"
+          CSPROJ_VERSION=$(grep -oP '(?<=<Version>)[^<]+' SmarterSystems.ElliottWaves.Analyzer/SmarterSystems.ElliottWaves.Analyzer.csproj)
+          echo "Tag version:    $TAG"
+          echo "csproj version: $CSPROJ_VERSION"
+          if [ "$TAG" != "$CSPROJ_VERSION" ]; then
+            echo "::error::Tag v$TAG does not match csproj <Version>$CSPROJ_VERSION</Version>. Bump the csproj before tagging."
+            exit 1
+          fi
+
+      - name: Restore dependencies
+        run: dotnet restore SmarterSystems.ElliottWaves.sln
+
+      - name: Build (Release)
+        run: dotnet build SmarterSystems.ElliottWaves.Analyzer/SmarterSystems.ElliottWaves.Analyzer.csproj --no-restore --configuration Release -warnaserror
+
+      - name: Pack
+        run: dotnet pack SmarterSystems.ElliottWaves.Analyzer/SmarterSystems.ElliottWaves.Analyzer.csproj --no-build --configuration Release --output ./artifacts
+
+      - name: Publish to NuGet
+        run: dotnet nuget push './artifacts/*.nupkg' --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+      - name: Publish symbol package
+        run: dotnet nuget push './artifacts/*.snupkg' --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+        continue-on-error: true
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: ./artifacts/*.nupkg

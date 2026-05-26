@@ -1,0 +1,49 @@
+# Visual Studio / .NET build artifacts
+bin/
+obj/
+out/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+.vs/
+
+# Visual Studio user-specific
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+# JetBrains Rider
+.idea/
+*.DotSettings.user
+
+# Build results / publish
+TestResults/
+[Pp]ublish/
+publish/
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+
+# Test data downloaded by scripts/fetch-test-data.ps1 — never commit, fetch on demand.
+# The .gitkeep placeholder lets the empty directory survive in the repo.
+testdata/*
+!testdata/.gitkeep
+
+# Test output (chart PNGs, dump files, generated test code)
+testoutput/
+
+# Claude Code workspace data — local to each contributor
+.claude/
+
+# OS-level junk
+.DS_Store
+Thumbs.db
+
+# Editor swap / backup
+*.swp
+*~

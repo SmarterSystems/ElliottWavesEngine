@@ -1,0 +1,2 @@
+# This directory is populated by scripts/fetch-test-data.ps1.
+# The directory itself is committed via this placeholder; the JSON files inside are gitignored.

@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      run_regression:
+        description: 'Run regression tests (fetches test data from Binance)'
+        required: false
+        default: 'false'
+
+jobs:
+  build:
+    name: Build and test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+          include-prerelease: true
+
+      - name: Restore dependencies
+        run: dotnet restore SmarterSystems.ElliottWaves.sln
+
+      - name: Build (Release, warnings as errors)
+        run: dotnet build SmarterSystems.ElliottWaves.sln --no-restore --configuration Release -warnaserror
+
+      - name: Fetch test data (optional, on-demand)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_regression == 'true' }}
+        shell: pwsh
+        run: ./scripts/fetch-test-data.ps1
+
+      - name: Run tests
+        run: dotnet test SmarterSystems.ElliottWaves.Validation/SmarterSystems.ElliottWaves.Validation.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=test-results.trx"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: '**/test-results.trx'
+          if-no-files-found: ignore

@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <!-- NuGet package metadata -->
+  <PropertyGroup>
+    <PackageId>SmarterSystems.ElliottWavesEngine</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Benjamin Lutz</Authors>
+    <Company>Smarter Systems</Company>
+    <Copyright>Copyright (c) 2026 Benjamin Lutz / Smarter Systems</Copyright>
+    <Title>SmarterSystems Elliott Waves Engine</Title>
+    <Description>A forward-projection Elliott Wave detection engine for OHLCV time-series data. Detects Cycle-, Primary-, and Intermediate-degree waves using log-scale Fibonacci projection and pattern morphing. Includes a ScottPlot-based chart renderer. Battle-tested in production across 11 cryptocurrency instruments.</Description>
+    <PackageProjectUrl>https://github.com/SmarterSystems/ElliottWavesEngine</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/SmarterSystems/ElliottWavesEngine.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>elliott-wave fibonacci technical-analysis financial-analysis crypto trading dotnet net10 candlestick ohlcv</PackageTags>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+  </PropertyGroup>
+
+  <!-- Symbol packages and source-link for debug-from-NuGet experience -->
+  <PropertyGroup>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ScottPlot" Version="5.1.58" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md" Pack="true" PackagePath="\" />
+    <None Include="..\LICENSE" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>
