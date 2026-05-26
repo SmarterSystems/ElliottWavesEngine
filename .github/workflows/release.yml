@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Tag or branch to release from (used as informational label only; csproj <Version> drives the package version)'
+        required: false
+        default: 'v1.0.0'
 
 jobs:
   publish:
@@ -23,6 +29,7 @@ jobs:
           include-prerelease: true
 
       - name: Verify tag matches csproj version
+        if: github.ref_type == 'tag'
         shell: bash
         run: |
           TAG="${GITHUB_REF#refs/tags/v}"
