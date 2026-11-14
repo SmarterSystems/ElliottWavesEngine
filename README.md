@@ -112,7 +112,7 @@ The regression tests assert exact wave timestamps and prices against snapshot ba
 pwsh ./scripts/fetch-test-data.ps1
 ```
 
-The script downloads roughly seven years of hourly candles per instrument from the Binance public API into `./testdata/`. No API key is required. Total download size is approximately one hundred megabytes.
+The script downloads the hourly candles of each instrument from the Binance public API into `./testdata/`, from its first Binance candle up to 2026-03-20, the fixed window the snapshot baselines were recorded on. No API key is required. Total download size is approximately ninety megabytes.
 
 If a test data file is missing when a test runs, the test reports `Inconclusive` rather than failing. This keeps `dotnet test` runnable on a fresh clone without internet access.
 
