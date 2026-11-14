@@ -4,7 +4,7 @@
 [![NuGet](https://img.shields.io/nuget/v/SmarterSystems.ElliottWavesEngine.svg)](https://www.nuget.org/packages/SmarterSystems.ElliottWavesEngine/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-A forward-projection Elliott Wave detection engine for OHLCV time-series data, written in C# / .NET 10.
+A forward-projection Elliott Wave detection engine for OHLCV time-series data, written in C# / .NET 11.
 
 The library detects Cycle-, Primary-, and Intermediate-degree waves on candlestick data by projecting Fibonacci retracement and extension levels forward from confirmed pivots and accepting the most extreme actual price that lands within tolerance. Pattern morphing (impulse, diagonal, A-B-C correction) and Frost-and-Prechter inviolable rules (R1 through R5) are enforced structurally rather than as post-hoc scores.
 
@@ -96,7 +96,7 @@ scripts/                                 fetch-test-data.ps1
 
 ## Building and running tests
 
-The library requires the .NET 10 SDK.
+The library requires the .NET 11 SDK.
 
 ```bash
 dotnet restore
