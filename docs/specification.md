@@ -220,7 +220,7 @@ Tester project continues to work with same input/output paths.
 
 ### Test Project
 
-- **Project**: `SmarterSystems.ElliottWaves.Validation` (MSTest, .NET 10)
+- **Project**: `SmarterSystems.ElliottWaves.Validation` (MSTest, .NET 10 and .NET 11)
 - **No other validation tools allowed** — no Python, no PowerShell, no external scripts
 - All validation is via C# unit and integration tests
 - **If unit tests + integration tests are green → solution works**

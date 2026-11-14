@@ -6,9 +6,9 @@
 .DESCRIPTION
     Writes one JSON file per symbol into the testdata directory. The format matches
     what the test suite expects (camelCase property names, ISO-8601 timestampUtc).
-    The Binance public klines endpoint requires no API key. Default fetch span is
-    seven years of hourly candles, which covers the regression test horizon for all
-    instruments.
+    The Binance public klines endpoint requires no API key. The default fetch span is
+    the fixed window from StartUtc to EndUtc that the regression snapshots were
+    recorded on. Prices are parsed as decimal straight from the Binance strings.
 
     Override ELLIOTTWAVES_TESTDATA_PATH to write somewhere other than ./testdata.
 
@@ -18,8 +18,18 @@
 .PARAMETER Interval
     Kline interval. Defaults to 1h to match the analyzer input expectation.
 
+.PARAMETER StartUtc
+    Inclusive start of the fetch window (ISO-8601, UTC). Symbols listed later start
+    at their first Binance candle.
+
+.PARAMETER EndUtc
+    Exclusive end of the fetch window (ISO-8601, UTC). The default matches the
+    regression snapshots; a later end changes the detected in-progress waves.
+
 .PARAMETER YearsBack
-    Number of years of history to fetch back from now. Defaults to 7.
+    Optional. When set, fetches a sliding window of this many years back from now
+    instead of StartUtc to EndUtc. The regression snapshots do not hold on a
+    sliding window.
 
 .PARAMETER OutputDir
     Destination directory. Defaults to <repo-root>/testdata or the
@@ -38,11 +48,14 @@ param(
         'LINKUSDT', 'MANAUSDT', 'HBARUSDT', 'DOTUSDT', 'XRPUSDT', 'SUIUSDT'
     ),
     [string]$Interval = '1h',
-    [int]$YearsBack = 7,
+    [string]$StartUtc = '2017-01-01T00:00:00Z',
+    [string]$EndUtc = '2026-03-20T00:00:00Z',
+    [int]$YearsBack = 0,
     [string]$OutputDir = $null
 )
 
 $ErrorActionPreference = 'Stop'
+$invariant = [Globalization.CultureInfo]::InvariantCulture
 
 if (-not $OutputDir) {
     if ($env:ELLIOTTWAVES_TESTDATA_PATH) {
@@ -57,19 +70,25 @@ New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
 Write-Host "Output directory: $OutputDir"
 
 $baseUrl  = 'https://api.binance.com/api/v3/klines'
-$endTime  = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
-$startTime = [DateTimeOffset]::UtcNow.AddYears(-$YearsBack).ToUnixTimeMilliseconds()
+if ($YearsBack -gt 0) {
+    $endTime   = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+    $startTime = [DateTimeOffset]::UtcNow.AddYears(-$YearsBack).ToUnixTimeMilliseconds()
+} else {
+    $startTime = [DateTimeOffset]::Parse($StartUtc, $invariant, [Globalization.DateTimeStyles]::AssumeUniversal).ToUnixTimeMilliseconds()
+    $endTime   = [DateTimeOffset]::Parse($EndUtc, $invariant, [Globalization.DateTimeStyles]::AssumeUniversal).ToUnixTimeMilliseconds()
+}
+$window = '{0:yyyy-MM-ddTHH:mm}Z to {1:yyyy-MM-ddTHH:mm}Z' -f [DateTimeOffset]::FromUnixTimeMilliseconds($startTime).UtcDateTime, [DateTimeOffset]::FromUnixTimeMilliseconds($endTime).UtcDateTime
 
 foreach ($symbol in $Symbols) {
     $outFile = Join-Path $OutputDir "chartdata_$symbol.json"
-    Write-Host "Fetching $symbol ($Interval, $YearsBack year(s)) ..." -ForegroundColor Cyan
+    Write-Host "Fetching $symbol ($Interval, $window) ..." -ForegroundColor Cyan
 
     $candles = New-Object System.Collections.Generic.List[object]
     $cursor = $startTime
     $batchCount = 0
 
     while ($cursor -lt $endTime) {
-        $url = "$baseUrl`?symbol=$symbol&interval=$Interval&startTime=$cursor&limit=1000"
+        $url = "$baseUrl`?symbol=$symbol&interval=$Interval&startTime=$cursor&endTime=$($endTime - 1)&limit=1000"
         try {
             $response = Invoke-RestMethod -Uri $url -Method Get -TimeoutSec 30
         } catch {
@@ -83,11 +102,11 @@ foreach ($symbol in $Symbols) {
         foreach ($k in $response) {
             $candles.Add([pscustomobject]@{
                 timestampUtc = [DateTimeOffset]::FromUnixTimeMilliseconds([long]$k[0]).UtcDateTime.ToString('yyyy-MM-ddTHH:mm:ssZ')
-                open   = [decimal]$k[1]
-                high   = [decimal]$k[2]
-                low    = [decimal]$k[3]
-                close  = [decimal]$k[4]
-                volume = [decimal]$k[5]
+                open   = [decimal]::Parse($k[1], $invariant)
+                high   = [decimal]::Parse($k[2], $invariant)
+                low    = [decimal]::Parse($k[3], $invariant)
+                close  = [decimal]::Parse($k[4], $invariant)
+                volume = [decimal]::Parse($k[5], $invariant)
             })
         }
 

@@ -9,7 +9,7 @@ on:
       ref:
         description: 'Tag or branch to release from (used as informational label only; csproj <Version> drives the package version)'
         required: false
-        default: 'v1.0.0'
+        default: 'v1.1.0'
 
 jobs:
   publish:
@@ -22,10 +22,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup .NET 10
+      - name: Setup .NET 11
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: '11.0.x'
           include-prerelease: true
 
       - name: Verify tag matches csproj version

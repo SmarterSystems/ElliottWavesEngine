@@ -21,10 +21,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup .NET 10
+      - name: Setup .NET 10 and 11
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: |
+            10.0.x
+            11.0.x
           include-prerelease: true
 
       - name: Restore dependencies
@@ -39,12 +41,12 @@ jobs:
         run: ./scripts/fetch-test-data.ps1
 
       - name: Run tests
-        run: dotnet test SmarterSystems.ElliottWaves.Validation/SmarterSystems.ElliottWaves.Validation.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=test-results.trx"
+        run: dotnet test SmarterSystems.ElliottWaves.Validation/SmarterSystems.ElliottWaves.Validation.csproj --no-build --configuration Release --verbosity normal --report-trx --report-trx-filename "test-results_{tfm}.trx"
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: '**/test-results.trx'
+          path: '**/test-results_*.trx'
           if-no-files-found: ignore
