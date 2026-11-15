@@ -15,6 +15,10 @@ jobs:
   publish:
     name: Pack and publish to NuGet
     runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      id-token: write
+      contents: write
 
     steps:
       - name: Checkout
@@ -50,11 +54,17 @@ jobs:
       - name: Pack
         run: dotnet pack SmarterSystems.ElliottWaves.Analyzer/SmarterSystems.ElliottWaves.Analyzer.csproj --no-build --configuration Release --output ./artifacts
 
+      - name: NuGet login (trusted publishing)
+        id: nuget-login
+        uses: NuGet/login@v1
+        with:
+          user: SmarterSystems
+
       - name: Publish to NuGet
-        run: dotnet nuget push './artifacts/*.nupkg' --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+        run: dotnet nuget push './artifacts/*.nupkg' --api-key ${{ steps.nuget-login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
 
       - name: Publish symbol package
-        run: dotnet nuget push './artifacts/*.snupkg' --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+        run: dotnet nuget push './artifacts/*.snupkg' --api-key ${{ steps.nuget-login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
         continue-on-error: true
 
       - name: Create GitHub release
